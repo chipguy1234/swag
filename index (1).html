@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIAS — Off-the-rack is over.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=JetBrains+Mono:wght@300;400;500&family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bone: #ecebe6;
+    --bone-soft: #f4f3ee;
+    --ink: #0a0a0a;
+    --ink-soft: #1a1a1a;
+    --slate: #6b6b66;
+    --slate-light: #9a9a93;
+    --sage: #a8b0a3;
+    --sage-deep: #5a6358;
+    --red: #d92121;
+    --red-deep: #b51818;
+    --line: rgba(10, 10, 10, 0.12);
+    --line-soft: rgba(10, 10, 10, 0.06);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--bone);
+    color: var(--ink);
+    font-family: 'Inter Tight', -apple-system, sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* === GRAIN OVERLAY === */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.04;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* === NAV === */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 24px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(236, 235, 230, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+    font-variation-settings: "opsz" 144;
+  }
+
+  .logo-mark {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: var(--red);
+    margin-right: 10px;
+    transform: translateY(-1px);
+  }
+
+  .nav-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--slate);
+    text-transform: uppercase;
+  }
+
+  /* === HERO === */
+  .hero {
+    min-height: 100vh;
+    padding: 140px 40px 80px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hero-main {
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+    gap: 80px;
+    align-items: stretch;
+    flex: 1;
+  }
+
+  .hero-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hero-right {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeUp 1.4s 0.6s forwards;
+  }
+
+  .blueprint {
+    width: 100%;
+    height: 100%;
+    min-height: 540px;
+    position: relative;
+  }
+
+  .blueprint-frame {
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--line);
+    background:
+      linear-gradient(rgba(10,10,10,0.015) 1px, transparent 1px) 0 0 / 100% 40px,
+      linear-gradient(90deg, rgba(10,10,10,0.015) 1px, transparent 1px) 0 0 / 40px 100%;
+  }
+
+  .blueprint-label {
+    position: absolute;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--slate);
+    text-transform: uppercase;
+    background: var(--bone);
+    padding: 0 8px;
+  }
+
+  .blueprint-label.tl { top: -6px; left: 16px; }
+  .blueprint-label.tr { top: -6px; right: 16px; }
+  .blueprint-label.bl { bottom: -6px; left: 16px; }
+  .blueprint-label.br { bottom: -6px; right: 16px; }
+
+  .blueprint svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Subtle pulsing on the measurement nodes */
+  .node {
+    animation: pulse 3s ease-in-out infinite;
+  }
+  .node:nth-child(2) { animation-delay: 0.4s; }
+  .node:nth-child(3) { animation-delay: 0.8s; }
+  .node:nth-child(4) { animation-delay: 1.2s; }
+  .node:nth-child(5) { animation-delay: 1.6s; }
+  .node:nth-child(6) { animation-delay: 2.0s; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  .hero-headline {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(48px, 8.2vw, 132px);
+    line-height: 0.94;
+    letter-spacing: -0.04em;
+    font-variation-settings: "opsz" 144;
+    margin-bottom: 60px;
+    position: relative;
+  }
+
+  .hero-headline .line {
+    display: block;
+    opacity: 0;
+    transform: translateY(40px);
+    animation: fadeUp 1.2s forwards;
+  }
+
+  .hero-headline .line:nth-child(1) { animation-delay: 0.4s; }
+  .hero-headline .line:nth-child(2) { animation-delay: 0.6s; }
+  .hero-headline .line:nth-child(3) { animation-delay: 0.8s; }
+
+  .hero-headline em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--red);
+  }
+
+  .hero-headline .crash {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    color: var(--red);
+    font-variation-settings: "opsz" 144;
+    letter-spacing: -0.05em;
+  }
+
+  .hero-bottom {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 60px;
+    align-items: end;
+    opacity: 0;
+    animation: fadeUp 1s 1s forwards;
+    margin-top: 60px;
+  }
+
+  .hero-blurb {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 460px;
+  }
+
+  .hero-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--slate);
+  }
+
+  .hero-proof {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    max-width: 540px;
+    opacity: 0;
+    animation: fadeUp 1s 0.9s forwards;
+  }
+
+  .proof-item {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--slate);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .proof-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 24px;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    font-variation-settings: "opsz" 144;
+    line-height: 1;
+  }
+
+  .proof-divider {
+    color: var(--line);
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 300;
+  }
+
+  .hero-cta {
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: right;
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .arrow-down {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .arrow-down:hover {
+    transform: translateY(4px);
+    background: var(--ink);
+    color: var(--bone);
+  }
+
+  /* === SECTION: THE PROBLEM === */
+  .problem {
+    padding: 120px 40px;
+    border-top: 1px solid var(--line);
+    background: var(--bone-soft);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    margin-bottom: 80px;
+  }
+
+  .section-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--slate);
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  .section-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  .problem-statement {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(32px, 5vw, 64px);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    max-width: 1100px;
+    font-variation-settings: "opsz" 144;
+  }
+
+  .problem-statement em {
+    font-style: italic;
+    color: var(--sage-deep);
+  }
+
+  .problem-stats {
+    margin-top: 100px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 60px;
+    border-top: 1px solid var(--line);
+    padding-top: 60px;
+  }
+
+  .stat-number {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 72px;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variation-settings: "opsz" 144;
+    margin-bottom: 16px;
+  }
+
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--slate);
+    line-height: 1.5;
+  }
+
+  /* === SECTION: THE PROCESS === */
+  .process {
+    padding: 120px 40px;
+    background: var(--ink);
+    color: var(--bone);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .process .section-label,
+  .process .section-number {
+    color: var(--slate-light);
+  }
+
+  .process .section-rule {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .process-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .process-step {
+    padding: 60px 40px 60px 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+  }
+
+  .process-step:last-child {
+    border-right: none;
+  }
+
+  .process-step:not(:first-child) {
+    padding-left: 40px;
+  }
+
+  .step-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--red);
+    margin-bottom: 32px;
+  }
+
+  .step-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 36px;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 24px;
+    font-variation-settings: "opsz" 144;
+  }
+
+  .step-body {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--slate-light);
+    max-width: 320px;
+  }
+
+  .step-visual {
+    margin-top: 40px;
+    height: 140px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Step visual 1: scan target */
+  .visual-scan {
+    width: 80px;
+    height: 80px;
+  }
+
+  .visual-scan svg {
+    width: 100%;
+    height: 100%;
+    animation: rotate 8s linear infinite;
+  }
+
+  @keyframes rotate {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Step visual 2: silhouettes */
+  .visual-silhouettes {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .silhouette {
+    width: 32px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .silhouette.boxy {
+    width: 50px;
+    height: 50px;
+  }
+
+  .silhouette.cropped {
+    width: 40px;
+    height: 38px;
+  }
+
+  /* Step visual 3: thread */
+  .visual-thread {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  .visual-thread::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--red);
+    transform-origin: left;
+    animation: thread 3s ease-in-out infinite;
+  }
+
+  @keyframes thread {
+    0%, 100% { transform: scaleX(0); }
+    50% { transform: scaleX(1); }
+  }
+
+  /* === MANIFESTO / RED CRASH === */
+  .crash-section {
+    background: var(--red);
+    color: var(--bone);
+    padding: 160px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .crash-text {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: clamp(80px, 18vw, 280px);
+    line-height: 0.85;
+    letter-spacing: -0.06em;
+    font-variation-settings: "opsz" 144;
+    text-transform: uppercase;
+  }
+
+  .crash-text .italic-word {
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .crash-sub {
+    margin-top: 60px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+
+  /* === SECTION: SIGNUP === */
+  .signup {
+    padding: 140px 40px;
+    background: var(--bone);
+    border-top: 1px solid var(--line);
+  }
+
+  .signup-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 100px;
+    align-items: start;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .signup-headline {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(40px, 6vw, 80px);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 32px;
+    font-variation-settings: "opsz" 144;
+  }
+
+  .signup-headline em {
+    font-style: italic;
+    color: var(--red);
+  }
+
+  .signup-body {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    max-width: 480px;
+    margin-bottom: 40px;
+  }
+
+  .perks {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-top: 30px;
+    border-top: 1px solid var(--line);
+  }
+
+  .perk {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .perk-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    letter-spacing: 0.1em;
+    padding-top: 4px;
+    min-width: 24px;
+  }
+
+  .perk-text {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  .form-card {
+    background: var(--ink);
+    color: var(--bone);
+    padding: 50px;
+    position: relative;
+  }
+
+  .form-card::before {
+    content: '';
+  }
+
+  .form-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--slate-light);
+    margin-bottom: 32px;
+    display: block;
+  }
+
+  .form-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 32px;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    line-height: 1.1;
+    font-variation-settings: "opsz" 144;
+  }
+
+  .form-subtitle {
+    font-size: 13px;
+    color: var(--slate-light);
+    margin-bottom: 40px;
+  }
+
+  .form-field {
+    margin-bottom: 24px;
+  }
+
+  .form-field label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--slate-light);
+    margin-bottom: 8px;
+  }
+
+  .form-field input,
+  .form-field select {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 0;
+    color: var(--bone);
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 15px;
+    transition: border-color 0.3s;
+  }
+
+  .form-field input:focus,
+  .form-field select:focus {
+    outline: none;
+    border-bottom-color: var(--red);
+  }
+
+  .form-field input::placeholder {
+    color: var(--slate);
+  }
+
+  .form-field select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='%239a9a93' stroke-width='1'%3E%3Cpath d='M2 4L6 8L10 4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0 center;
+  }
+
+  .form-field select option {
+    background: var(--ink);
+    color: var(--bone);
+  }
+
+  .submit-btn {
+    width: 100%;
+    background: var(--red);
+    color: var(--bone);
+    border: none;
+    padding: 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 24px;
+    transition: background 0.3s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .submit-btn:hover {
+    background: var(--red-deep);
+  }
+
+  .submit-btn:active {
+    transform: scale(0.98);
+  }
+
+  .form-meta {
+    margin-top: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--slate);
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .success-msg {
+    display: none;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .success-msg.show {
+    display: block;
+  }
+
+  .success-msg .check {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--red);
+    border-radius: 50%;
+    margin: 0 auto 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--red);
+  }
+
+  .success-msg h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .success-msg p {
+    font-size: 13px;
+    color: var(--slate-light);
+    line-height: 1.5;
+  }
+
+  /* === FOOTER === */
+  footer {
+    padding: 60px 40px 40px;
+    background: var(--ink);
+    color: var(--slate-light);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 60px;
+    align-items: end;
+  }
+
+  .footer-logo {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    color: var(--bone);
+  }
+
+  .footer-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .footer-right {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* === ANIMATIONS === */
+  @keyframes fadeUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 1s, transform 1s;
+  }
+
+  .reveal.in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 900px) {
+    nav {
+      padding: 18px 24px;
+    }
+
+    .hero {
+      padding: 100px 24px 60px;
+    }
+
+    .hero-main {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    .hero-right {
+      order: -1;
+      min-height: 380px;
+    }
+
+    .blueprint {
+      min-height: 380px;
+    }
+
+    .hero-bottom {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .hero-proof {
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .proof-num {
+      font-size: 20px;
+    }
+
+    .hero-cta {
+      justify-self: start;
+    }
+
+    .problem,
+    .process,
+    .signup {
+      padding: 80px 24px;
+    }
+
+    .problem-stats {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    .process-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .process-step {
+      border-right: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 40px 0;
+    }
+
+    .process-step:not(:first-child) {
+      padding-left: 0;
+    }
+
+    .signup-grid {
+      grid-template-columns: 1fr;
+      gap: 60px;
+    }
+
+    .form-card {
+      padding: 32px;
+    }
+
+    .crash-section {
+      padding: 100px 24px;
+    }
+
+    footer {
+      grid-template-columns: 1fr;
+      gap: 24px;
+      text-align: left;
+    }
+
+    .footer-meta,
+    .footer-right {
+      text-align: left;
+    }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><span class="logo-mark"></span>BIAS</div>
+  <div class="nav-meta">SS26</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+
+  <div class="hero-main">
+    <div class="hero-left">
+      <h1 class="hero-headline">
+        <span class="line">Off-the-rack</span>
+        <span class="line"><em>is</em> <span class="crash">over.</span></span>
+        <span class="line">Cut for you.</span>
+      </h1>
+
+      <div class="hero-proof">
+        <span class="proof-item"><span class="proof-num">80+</span> measurements</span>
+        <span class="proof-divider">/</span>
+        <span class="proof-item"><span class="proof-num">2</span> photos</span>
+        <span class="proof-divider">/</span>
+        <span class="proof-item"><span class="proof-num">40</span> seconds</span>
+      </div>
+
+      <div class="hero-bottom">
+        <p class="hero-blurb">
+          Everyone has a bias — how you want clothes to sit on you. We scan once, then cut everything to your body and your fit. Boxy, cropped, slim, dropped — whatever you wear.
+        </p>
+        <a href="#signup" class="hero-cta">
+          <span class="hero-tag">REQUEST ACCESS</span>
+          <span class="arrow-down">↓</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="blueprint">
+        <div class="blueprint-frame"></div>
+        <span class="blueprint-label tl">FIG. 01 — TEE / CUT.01</span>
+        <span class="blueprint-label tr">REF / 042.B</span>
+        <span class="blueprint-label bl">BIAS — STUDY</span>
+        <span class="blueprint-label br">SCALE 1:4</span>
+
+        <svg viewBox="0 0 320 540" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+
+          <!-- ============ GHOST SILHOUETTES (dashed, behind) ============ -->
+
+          <!-- DROP / oversized tee ghost (widest, longest, dropped shoulder) -->
+          <g opacity="0.18">
+            <path d="M 50 145
+                     L 90 110
+                     L 230 110
+                     L 270 145
+                     L 252 200
+                     L 232 185
+                     L 232 460
+                     L 88 460
+                     L 88 185
+                     L 68 200 Z"
+                  fill="none" stroke="#0a0a0a" stroke-width="0.6" stroke-dasharray="3 3"/>
+          </g>
+
+          <!-- BOXY tee ghost (wider body, normal shoulder, regular length) -->
+          <g opacity="0.22">
+            <path d="M 62 152
+                     L 95 118
+                     L 225 118
+                     L 258 152
+                     L 240 200
+                     L 224 188
+                     L 224 420
+                     L 96 420
+                     L 96 188
+                     L 80 200 Z"
+                  fill="none" stroke="#0a0a0a" stroke-width="0.6" stroke-dasharray="3 3"/>
+          </g>
+
+          <!-- CROPPED tee ghost (regular width, shorter hem) -->
+          <g opacity="0.22">
+            <path d="M 72 155
+                     L 102 122
+                     L 218 122
+                     L 248 155
+                     L 232 200
+                     L 218 190
+                     L 218 360
+                     L 102 360
+                     L 102 190
+                     L 88 200 Z"
+                  fill="none" stroke="#0a0a0a" stroke-width="0.6" stroke-dasharray="3 3"/>
+          </g>
+
+          <!-- ============ SOLID FOREGROUND: SLIM TEE ============ -->
+          <!-- Main body -->
+          <path d="M 80 158
+                   L 108 128
+                   L 212 128
+                   L 240 158
+                   L 224 198
+                   L 210 188
+                   L 210 420
+                   L 110 420
+                   L 110 188
+                   L 96 198 Z"
+                fill="none" stroke="#0a0a0a" stroke-width="0.9" stroke-linejoin="round"/>
+
+          <!-- Neckline (rib collar suggestion) -->
+          <path d="M 130 128
+                   Q 160 144 190 128"
+                fill="none" stroke="#0a0a0a" stroke-width="0.8"/>
+          <path d="M 132 130
+                   Q 160 142 188 130"
+                fill="none" stroke="#0a0a0a" stroke-width="0.4" opacity="0.5"/>
+
+          <!-- Shoulder seam (subtle, where sleeve meets body) -->
+          <line x1="108" y1="128" x2="116" y2="158" stroke="#0a0a0a" stroke-width="0.4" opacity="0.6"/>
+          <line x1="212" y1="128" x2="204" y2="158" stroke="#0a0a0a" stroke-width="0.4" opacity="0.6"/>
+
+          <!-- Sleeve hem stitching detail -->
+          <line x1="80" y1="158" x2="96" y2="198" stroke="#0a0a0a" stroke-width="0.4" opacity="0.5"/>
+          <line x1="240" y1="158" x2="224" y2="198" stroke="#0a0a0a" stroke-width="0.4" opacity="0.5"/>
+          <line x1="86" y1="178" x2="98" y2="192" stroke="#0a0a0a" stroke-width="0.3" stroke-dasharray="1 1.5" opacity="0.5"/>
+          <line x1="234" y1="178" x2="222" y2="192" stroke="#0a0a0a" stroke-width="0.3" stroke-dasharray="1 1.5" opacity="0.5"/>
+
+          <!-- Bottom hem stitching -->
+          <line x1="113" y1="416" x2="207" y2="416" stroke="#0a0a0a" stroke-width="0.3" stroke-dasharray="1 1.5" opacity="0.5"/>
+
+          <!-- ============ MEASUREMENT CALLOUTS (LEFT SIDE) ============ -->
+
+          <!-- Neck -->
+          <line x1="38" y1="135" x2="128" y2="135" stroke="#0a0a0a" stroke-width="0.3" stroke-dasharray="2 2" opacity="0.6"/>
+          <line x1="38" y1="130" x2="38" y2="140" stroke="#0a0a0a" stroke-width="0.4"/>
+          <text x="32" y="138" font-family="JetBrains Mono, monospace" font-size="7" fill="#6b6b66" text-anchor="end">NECK</text>
+
+          <!-- Shoulder -->
+          <line x1="38" y1="158" x2="80" y2="158" stroke="#0a0a0a" stroke-width="0.3" stroke-dasharray="2 2" opacity="0.6"/>
+          <line x1="38" y1="153" x2="38" y2="163" stroke="#0a0a0a" stroke-width="0.4"/>
+          <text x="32" y="161" font-family="JetBrains Mono, monospace" font-size="7" fill="#6b6b66" text-anchor="end">SHLDR</text>
+
+          <!-- Chest -->
+          <line x1="38" y1="220" x2="110" y2="220" stroke="#0a0a0a" stroke-width="0.3" stroke-dasharray="2 2" opacity="0.6"/>
+          <line x1="38" y1="215" x2="38" y2="225" stroke="#0a0a0a" stroke-width="0.4"/>
+          <text x="32" y="223" font-family="JetBrains Mono, monospace" font-size="7" fill="#6b6b66" text-anchor="end">CHEST</text>
+
+          <!-- Length -->
+          <line x1="38" y1="420" x2="110" y2="420" stroke="#0a0a0a" stroke-width="0.3" stroke-dasharray="2 2" opacity="0.6"/>
+          <line x1="38" y1="415" x2="38" y2="425" stroke="#0a0a0a" stroke-width="0.4"/>
+          <text x="32" y="423" font-family="JetBrains Mono, monospace" font-size="7" fill="#6b6b66" text-anchor="end">HEM</text>
+
+          <!-- Vertical body length indicator -->
+          <line x1="46" y1="158" x2="46" y2="420" stroke="#0a0a0a" stroke-width="0.3" opacity="0.4"/>
+          <line x1="43" y1="158" x2="49" y2="158" stroke="#0a0a0a" stroke-width="0.4"/>
+          <line x1="43" y1="420" x2="49" y2="420" stroke="#0a0a0a" stroke-width="0.4"/>
+
+          <!-- ============ DIMENSIONS (RIGHT SIDE) ============ -->
+
+          <!-- Chest width -->
+          <line x1="240" y1="220" x2="282" y2="220" stroke="#0a0a0a" stroke-width="0.3" opacity="0.4"/>
+          <text x="284" y="223" font-family="JetBrains Mono, monospace" font-size="7" fill="#6b6b66">21.0"</text>
+
+          <!-- Sleeve length -->
+          <line x1="240" y1="160" x2="282" y2="160" stroke="#0a0a0a" stroke-width="0.3" opacity="0.4"/>
+          <text x="284" y="163" font-family="JetBrains Mono, monospace" font-size="7" fill="#6b6b66">7.5"</text>
+
+          <!-- Body length -->
+          <line x1="240" y1="290" x2="282" y2="290" stroke="#0a0a0a" stroke-width="0.3" opacity="0.4"/>
+          <text x="284" y="293" font-family="JetBrains Mono, monospace" font-size="7" fill="#6b6b66">27.0"</text>
+
+          <!-- Hem width -->
+          <line x1="240" y1="420" x2="282" y2="420" stroke="#0a0a0a" stroke-width="0.3" opacity="0.4"/>
+          <text x="284" y="423" font-family="JetBrains Mono, monospace" font-size="7" fill="#6b6b66">20.5"</text>
+
+          <!-- ============ MEASUREMENT NODES (pulsing) ============ -->
+          <circle class="node" cx="108" cy="128" r="2.5" fill="#d92121"/>
+          <circle class="node" cx="212" cy="128" r="2.5" fill="#d92121"/>
+          <circle class="node" cx="80" cy="158" r="2.5" fill="#d92121"/>
+          <circle class="node" cx="240" cy="158" r="2.5" fill="#d92121"/>
+          <circle class="node" cx="110" cy="420" r="2.5" fill="#d92121"/>
+          <circle class="node" cx="210" cy="420" r="2.5" fill="#d92121"/>
+
+          <!-- Center axis line (subtle) -->
+          <line x1="160" y1="140" x2="160" y2="416" stroke="#0a0a0a" stroke-width="0.3" stroke-dasharray="1 3" opacity="0.35"/>
+
+          <!-- ============ FIT SELECTOR CHIPS ============ -->
+          <g transform="translate(40, 478)">
+            <rect x="0" y="0" width="36" height="14" fill="#d92121" stroke="none"/>
+            <text x="18" y="10" font-family="JetBrains Mono, monospace" font-size="7" fill="#ecebe6" text-anchor="middle" letter-spacing="0.5">SLIM</text>
+
+            <rect x="42" y="0" width="44" height="14" fill="none" stroke="#0a0a0a" stroke-width="0.5"/>
+            <text x="64" y="10" font-family="JetBrains Mono, monospace" font-size="7" fill="#0a0a0a" text-anchor="middle" letter-spacing="0.5">REG</text>
+
+            <rect x="92" y="0" width="44" height="14" fill="none" stroke="#0a0a0a" stroke-width="0.5"/>
+            <text x="114" y="10" font-family="JetBrains Mono, monospace" font-size="7" fill="#0a0a0a" text-anchor="middle" letter-spacing="0.5">BOXY</text>
+
+            <rect x="142" y="0" width="52" height="14" fill="none" stroke="#0a0a0a" stroke-width="0.5"/>
+            <text x="168" y="10" font-family="JetBrains Mono, monospace" font-size="7" fill="#0a0a0a" text-anchor="middle" letter-spacing="0.5">CROPPED</text>
+
+            <rect x="200" y="0" width="44" height="14" fill="none" stroke="#0a0a0a" stroke-width="0.5"/>
+            <text x="222" y="10" font-family="JetBrains Mono, monospace" font-size="7" fill="#0a0a0a" text-anchor="middle" letter-spacing="0.5">DROP</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE PROBLEM -->
+<section class="problem">
+  <div class="section-header">
+    <span class="section-number">001 /</span>
+    <span class="section-label">The Problem</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <p class="problem-statement reveal">
+    A KITH large, an Essentials large, a Uniqlo large — three completely <em>different garments</em>. You buy two sizes. You return one. You give up.
+    <br><br>
+    The boxy fit you want is shaped for someone else's shoulders. The cropped tee hits at your navel instead of your waist. <em>Every "L" was made for a body that isn't yours.</em>
+  </p>
+
+  <div class="problem-stats">
+    <div class="reveal">
+      <div class="stat-number">73%</div>
+      <div class="stat-label">of online apparel returns are sizing-related</div>
+    </div>
+    <div class="reveal">
+      <div class="stat-number">∞</div>
+      <div class="stat-label">of bodies that don't fit a 5'10" mannequin pattern</div>
+    </div>
+    <div class="reveal">
+      <div class="stat-number">0</div>
+      <div class="stat-label">brands letting you pick the silhouette and the fit</div>
+    </div>
+  </div>
+</section>
+
+<!-- THE PROCESS -->
+<section class="process">
+  <div class="section-header">
+    <span class="section-number">002 /</span>
+    <span class="section-label">The Process</span>
+    <span class="section-rule"></span>
+  </div>
+
+  <div class="process-grid">
+    <div class="process-step reveal">
+      <div class="step-number">STEP 01</div>
+      <h3 class="step-title">Scan once.</h3>
+      <p class="step-body">
+        Two photos from your phone. 80+ measurements. Forty seconds. You're now in the system.
+      </p>
+      <div class="step-visual">
+        <div class="visual-scan">
+          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#d92121" stroke-width="0.8">
+            <circle cx="40" cy="40" r="35"/>
+            <circle cx="40" cy="40" r="24" stroke-dasharray="2 4"/>
+            <circle cx="40" cy="40" r="12"/>
+            <line x1="40" y1="5" x2="40" y2="75"/>
+            <line x1="5" y1="40" x2="75" y2="40"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="process-step reveal">
+      <div class="step-number">STEP 02</div>
+      <h3 class="step-title">Choose your fit.</h3>
+      <p class="step-body">
+        Slim. Regular. Boxy. Cropped. Dropped-shoulder. Long. You're not picking a size — you're picking how the garment sits on you.
+      </p>
+      <div class="step-visual">
+        <div class="visual-silhouettes">
+          <div class="silhouette"></div>
+          <div class="silhouette boxy"></div>
+          <div class="silhouette cropped"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="process-step reveal">
+      <div class="step-number">STEP 03</div>
+      <h3 class="step-title">Cut for you.</h3>
+      <p class="step-body">
+        Each piece is patterned to your measurements and your chosen silhouette. Made in Portugal. Shipped in two to three weeks.
+      </p>
+      <div class="step-visual">
+        <div class="visual-thread"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RED CRASH -->
+<section class="crash-section">
+  <h2 class="crash-text">
+    Made <span class="italic-word">for</span><br>nobody<br>else.
+  </h2>
+  <div class="crash-sub">BIAS — SS26</div>
+</section>
+
+<!-- SIGNUP -->
+<section class="signup" id="signup">
+  <div class="signup-grid">
+    <div>
+      <div class="section-header">
+        <span class="section-number">003 /</span>
+        <span class="section-label">The List</span>
+        <span class="section-rule"></span>
+      </div>
+
+      <h2 class="signup-headline">
+        The first <em>200</em> get the drop before anyone else.
+      </h2>
+      <p class="signup-body">
+        The first capsule lands in 2026 — a tee, a hoodie, a sweat. Each in four silhouettes. Each cut to you. The list gets the scan link before it goes public, a locked price, and a direct line to us while we figure out the fit.
+      </p>
+
+      <div class="perks">
+        <div class="perk">
+          <span class="perk-num">01 /</span>
+          <span class="perk-text">First in line when the scan opens and the first pieces ship.</span>
+        </div>
+        <div class="perk">
+          <span class="perk-num">02 /</span>
+          <span class="perk-text">A price locked in. Capped below retail. For as long as you wear us.</span>
+        </div>
+        <div class="perk">
+          <span class="perk-num">03 /</span>
+          <span class="perk-text">Free remake if the fit isn't right. We learn from every order.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card" id="formCard">
+      <div id="formContent">
+        <span class="form-label">JOIN THE LIST</span>
+        <h3 class="form-title">Get on the list.</h3>
+        <p class="form-subtitle">No spam. One email when we open scans.</p>
+
+        <form id="accessForm">
+          <div class="form-field">
+            <label for="email">EMAIL</label>
+            <input type="email" id="email" name="email" placeholder="you@domain.com" required>
+          </div>
+
+          <div class="form-field">
+            <label for="name">NAME</label>
+            <input type="text" id="name" name="name" placeholder="First name" required>
+          </div>
+
+          <div class="form-field">
+            <label for="fit">YOUR BIAS (TODAY)</label>
+            <select id="fit" name="fit" required>
+              <option value="">Select one</option>
+              <option value="slim">Slim — close to the body</option>
+              <option value="regular">Regular — true to size</option>
+              <option value="boxy">Boxy — relaxed, wider</option>
+              <option value="cropped">Cropped boxy — shorter, wider</option>
+              <option value="oversized">Oversized — full drop</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="frustration">BIGGEST FIT FRUSTRATION (OPTIONAL)</label>
+            <input type="text" id="frustration" name="frustration" placeholder="e.g. shoulders too tight, tees too long">
+          </div>
+
+          <button type="submit" class="submit-btn">Request Access →</button>
+        </form>
+
+        <p class="form-meta">RESPONSE WITHIN 48 HOURS</p>
+      </div>
+
+      <div class="success-msg" id="successMsg">
+        <div class="check">✓</div>
+        <h3>You're on the list.</h3>
+        <p>We'll be in touch when the scan flow opens. In the meantime, we may reach out directly to learn more about how you wear things.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">BIAS</div>
+  <div class="footer-meta">© 2026 — ALL RIGHTS RESERVED</div>
+  <div class="footer-right">NEW YORK</div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Form submission (collects locally for now — wire to Mailchimp/Beehiiv/Formspree on deploy)
+  document.getElementById('accessForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = {
+      email: document.getElementById('email').value,
+      name: document.getElementById('name').value,
+      fit: document.getElementById('fit').value,
+      frustration: document.getElementById('frustration').value,
+      timestamp: new Date().toISOString()
+    };
+    console.log('Signup:', data);
+    // Store locally so you don't lose them before backend is wired
+    try {
+      const existing = JSON.parse(localStorage.getItem('bias_signups') || '[]');
+      existing.push(data);
+      localStorage.setItem('bias_signups', JSON.stringify(existing));
+    } catch (err) {}
+
+    document.getElementById('formContent').style.display = 'none';
+    document.getElementById('successMsg').classList.add('show');
+  });
+
+</script>
+
+</body>
+</html>
